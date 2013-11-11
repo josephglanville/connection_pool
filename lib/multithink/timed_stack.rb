@@ -1,12 +1,13 @@
 require 'thread'
 require 'timeout'
+require_relative 'connection'
 
-class ConnectionPool::PoolShuttingDownError < RuntimeError; end
+class MultiThink::PoolShuttingDownError < RuntimeError; end
 
-class ConnectionPool::TimedStack
+class MultiThink::TimedStack
 
-  def initialize(size = 0)
-    @que = Array.new(size) { yield }
+  def initialize(size = 0, servers)
+    @que = Array.new(size) {|s| MultiThink::Connection.new(servers)}
     @mutex = Mutex.new
     @resource = ConditionVariable.new
     @shutdown_block = nil
@@ -29,7 +30,7 @@ class ConnectionPool::TimedStack
     deadline = Time.now + timeout
     @mutex.synchronize do
       loop do
-        raise ConnectionPool::PoolShuttingDownError if @shutdown_block
+        raise MultiThink::PoolShuttingDownError if @shutdown_block
         return @que.pop unless @que.empty?
         to_wait = deadline - Time.now
         raise Timeout::Error, "Waited #{timeout} sec" if to_wait <= 0
