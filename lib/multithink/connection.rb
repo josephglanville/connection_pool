@@ -16,23 +16,28 @@ class MultiThink::Connection
   end
 
   def connect
-    # TODO try all servers until we get a connection
-    options = @servers.first
-    begin
-      @conn = r.connect(options)
-    rescue
-      @tried ||= 0
-      sleep 1
-      retry if (@tried += 1) < @retries
+    @tried = 0
+    while @tried < @retries do
+      @servers.each do |server|
+        begin
+          @conn = r.connect(server)
+          return true
+        rescue
+          sleep 1
+        end
+      end
     end
+    # If we got here we couldn't get a connection. :(
+    raise RuntimeError "Error: Reached maximum retries (#{@retries})"
   end
 
   def run(query)
-    # TODO handle connection failure
     begin
       query.run(@conn)
     rescue RuntimeError => e
-      reconnect
+      if reconnect
+        retry
+      end
     end
   end
 
