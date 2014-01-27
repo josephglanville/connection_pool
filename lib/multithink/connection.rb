@@ -31,9 +31,9 @@ class MultiThink::Connection
     raise RuntimeError "Error: Reached maximum retries (#{@retries})"
   end
 
-  def run(query)
+  def run(query, *args)
     begin
-      query.run(@conn)
+      query.run(@conn, *args)
     rescue RuntimeError => e
       if reconnect
         retry
