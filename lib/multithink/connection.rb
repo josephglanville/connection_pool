@@ -25,6 +25,7 @@ class MultiThink::Connection
         rescue
           sleep 1
         end
+        @tried += 1
       end
     end
     # If we got here we couldn't get a connection. :(
