@@ -20,7 +20,9 @@ class MultiThink::Connection
     while @tried < @retries do
       @servers.each do |server|
         begin
-          @conn = r.connect(server)
+          Timeout::timeout(1) do
+            @conn = r.connect(server)
+          end
           return true
         rescue
           sleep 1
