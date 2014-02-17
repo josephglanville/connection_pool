@@ -31,12 +31,14 @@ class MultiThink::Connection
       end
     end
     # If we got here we couldn't get a connection. :(
-    raise RuntimeError "Error: Reached maximum retries (#{@retries})"
+    raise "Error: Reached maximum retries (#{@retries})"
   end
 
   def run(query, *args)
     begin
       query.run(@conn, *args)
+    rescue RethinkDB::RqlRuntimeError => e
+      raise e
     rescue RuntimeError => e
       if reconnect
         retry
