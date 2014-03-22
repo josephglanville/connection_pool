@@ -20,6 +20,7 @@ class MultiThink::Connection
     while @tried < @retries do
       @servers.each do |server|
         begin
+          #TODO(jpg) make timeout configurable
           Timeout::timeout(1) do
             @conn = r.connect(server)
           end
@@ -37,12 +38,23 @@ class MultiThink::Connection
   def run(query, *args)
     begin
       query.run(@conn, *args)
-    rescue RethinkDB::RqlRuntimeError => e
-      raise e
-    rescue RuntimeError => e
-      if reconnect
-        retry
+    rescue StandardError => e
+      if is_connection_error(e)
+        retry if reconnect
       end
+    end
+  end
+
+  def is_connection_error(e)
+    case e
+    when Errno::ECONNREFUSED, Errno::EHOSTUNREACH, Errno::EPIPE,
+      Errno::ECONNRESET, Errno::ETIMEDOUT, IOError
+      true
+    when RethinkDB::RqlRuntimeError
+      e.message =~ /cannot perform (read|write): No master available/ ||
+      e.message =~ /Error: Connection Closed/
+    else
+      false
     end
   end
 
