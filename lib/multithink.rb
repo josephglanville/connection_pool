@@ -2,16 +2,28 @@ require 'multithink/version'
 require 'multithink/timed_stack'
 
 class MultiThink
-  DEFAULTS = {size: 5, timeout: 5, servers: [{host: '127.0.0.1', port: 28015}]}
+  DEFAULTS = {
+    size: 5,
+    timeout: 5,
+    servers: [
+      {
+        host: '127.0.0.1',
+        port: 28015
+      }
+    ],
+    conn_options: {}
+  }
 
   def initialize(options = {})
     options = DEFAULTS.merge(options)
 
     @size = options.fetch(:size)
     @timeout = options.fetch(:timeout)
-    @servers = options.fetch(:servers)
+    servers = options.fetch(:servers)
+    conn_options = options.fetch(:conn_options)
+    conn_options[:servers] = servers
 
-    @available = TimedStack.new(@size, @servers)
+    @available = TimedStack.new(@size, conn_options)
     @key = :"current-#{@available.object_id}"
   end
 

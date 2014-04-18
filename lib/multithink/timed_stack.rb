@@ -6,8 +6,8 @@ class MultiThink::PoolShuttingDownError < RuntimeError; end
 
 class MultiThink::TimedStack
 
-  def initialize(size = 0, servers)
-    @que = Array.new(size) {|s| MultiThink::Connection.new(servers)}
+  def initialize(size = 0, options)
+    @que = Array.new(size) {|s| MultiThink::Connection.new(options)}
     @mutex = Mutex.new
     @resource = ConditionVariable.new
     @shutdown_block = nil

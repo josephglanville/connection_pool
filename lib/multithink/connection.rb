@@ -6,12 +6,17 @@ include RethinkDB::Shortcuts
 
 class MultiThink::Connection
 
-  DEFAULTS = {retries: 10}
+  DEFAULTS = {
+    retries: 10,
+    retry_interval: 1,
+    conn_timeout: 1
+  }
 
-  def initialize(servers, options = {})
-    @servers = servers
+  def initialize(options = {})
     options = DEFAULTS.merge(options)
+    @servers = options.fetch(:servers)
     @retries = options.fetch(:retries)
+    @retry_interval = options.fetch(:retry_interval)
     connect
   end
 
@@ -21,12 +26,12 @@ class MultiThink::Connection
       @servers.each do |server|
         begin
           #TODO(jpg) make timeout configurable
-          Timeout::timeout(1) do
+          Timeout::timeout(@conn_timeout) do
             @conn = r.connect(server)
           end
           return true
         rescue
-          sleep 1
+          sleep @retry_interval
         end
         @tried += 1
       end
