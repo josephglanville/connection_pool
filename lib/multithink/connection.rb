@@ -17,6 +17,7 @@ class MultiThink::Connection
     @servers = options.fetch(:servers)
     @retries = options.fetch(:retries)
     @retry_interval = options.fetch(:retry_interval)
+    @conn_timeout = options.fetch(:conn_timeout)
     connect
   end
 
