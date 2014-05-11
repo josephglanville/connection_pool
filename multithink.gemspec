@@ -17,5 +17,6 @@ Gem::Specification.new do |s|
   s.license = "MIT"
   s.add_runtime_dependency 'rethinkdb', '>= 1.10.0'
   s.add_development_dependency 'minitest', '>= 5.0.0'
+  s.add_development_dependency 'pry'
   s.add_development_dependency 'rake'
 end
